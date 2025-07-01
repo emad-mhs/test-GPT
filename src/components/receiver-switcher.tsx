@@ -1,9 +1,7 @@
 'use client';
 
-import qs from 'query-string';
-import * as React from 'react';
+import React from 'react';
 import { Check, ChevronDown, PlusCircle, UsersRound } from 'lucide-react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +23,7 @@ import { useCreateContactModal } from '@/modules/secretary/contacts/hooks/use-cr
 import { departmentsMain } from '@/modules/secretary/departments/types';
 import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
@@ -46,53 +45,27 @@ export const ReceiverSwitcher = ({
 }: StoreSwitcherProps) => {
   const trpc = useTRPC();
   const newContact = useCreateContactModal();
-  const router = useRouter();
-  const pathname = usePathname();
 
-  const params = useSearchParams();
-  const receiverId = params.get('receiverId') || 'all';
-  const senderId = params.get('senderId');
-  const search = params.get('search');
-  const type = params.get('type');
-  const status = params.get('status');
-  const from = params.get('from');
-  const to = params.get('to');
+  // hook عام للفلاتر يدير قيمة senderId في الـ URL
+  const { filters, setReceiverId } = useFilters();
+  const { receiverId } = filters;
 
   const { data: session } = useSuspenseQuery(
     trpc.users.getSession.queryOptions()
   );
-
   const isSecretary = session.user.departmentId === departmentsMain.SECRETARY;
 
+  // لإظهار الاسم الحالي أو placeholder
   const currentContact = options.find(item => item.value === receiverId);
 
+  // لإدارة فتح/إغلاق الـ popover
   const [open, setOpen] = React.useState(false);
 
-  const onChange = (newValue: string) => {
+  // عند اختيار عنصر جديد
+  const onChange = (value: string) => {
+    // نستخدم '' لتمثيل "all" (سيتم مسح الباراميتر من الـ URL)
+    setReceiverId(value === 'all' ? '' : value);
     setOpen(false);
-    const query = {
-      receiverId: newValue,
-      senderId,
-      search,
-      type,
-      status,
-      from,
-      to,
-    };
-
-    if (newValue === 'all') {
-      query.receiverId = '';
-    }
-
-    const url = qs.stringifyUrl(
-      {
-        url: pathname,
-        query,
-      },
-      { skipNull: true, skipEmptyString: true }
-    );
-
-    router.push(url);
   };
 
   return (

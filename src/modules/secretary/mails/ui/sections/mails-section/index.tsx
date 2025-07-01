@@ -26,37 +26,31 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface MailsSectionProps {
-  search: string | undefined;
-  type: MailTypes | undefined;
-  status: MailStatuses | undefined;
-  senderId: string | undefined;
-  receiverId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
+// interface MailsSectionProps {
+//   search: string | undefined;
+//   type: MailTypes | undefined;
+//   status: MailStatuses | undefined;
+//   senderId: string | undefined;
+//   receiverId: string | undefined;
+//   from: string | undefined;
+//   to: string | undefined;
+// }
 
-export const MailsSection = (props: MailsSectionProps) => {
+export const MailsSection = () => {
   return (
     <Suspense fallback={<MailsSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <MailsSectionSuspense {...props} />
+        <MailsSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-const MailsSectionSuspense = ({
-  search,
-  type,
-  status,
-  senderId,
-  receiverId,
-  from,
-  to,
-}: MailsSectionProps) => {
+const MailsSectionSuspense = () => {
   const trpc = useTRPC();
+  const { filters } = useFilters();
   const newMail = useCreateMailModal();
 
   const { data: session } = useSuspenseQuery(
@@ -64,33 +58,17 @@ const MailsSectionSuspense = ({
   );
   const canAdd = session?.user.canAdd;
 
-  // const [mails, query] = trpc.mails.getMany.useSuspenseInfiniteQuery(
-  //   {
-  //     limit: DEFAULT_LIMIT,
-  //     search,
-  //     type,
-  //     status,
-  //     senderId,
-  //     receiverId,
-  //     from,
-  //     to,
-  //   },
-  //   {
-  //     getNextPageParam: lastPage => lastPage.nextCursor,
-  //   }
-  // );
-
   const query = useSuspenseInfiniteQuery(
     trpc.mails.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
-        type,
-        status,
-        senderId,
-        receiverId,
-        from,
-        to,
+        type: filters.type,
+        status: filters.status,
+        search: filters.search,
+        senderId: filters.senderId,
+        receiverId: filters.receiverId,
+        from: filters.from,
+        to: filters.to,
       },
       {
         getNextPageParam: lastPage => lastPage.nextCursor,

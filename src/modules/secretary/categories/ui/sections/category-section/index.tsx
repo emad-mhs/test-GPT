@@ -27,10 +27,10 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
 interface CategorySectionProps {
   categoryId: string;
-  search: string | undefined;
 }
 
 export const CategorySection = (props: CategorySectionProps) => {
@@ -43,12 +43,10 @@ export const CategorySection = (props: CategorySectionProps) => {
   );
 };
 
-const CategorySectionSuspense = ({
-  categoryId,
-  search,
-}: CategorySectionProps) => {
+const CategorySectionSuspense = ({ categoryId }: CategorySectionProps) => {
   const trpc = useTRPC();
   const router = useRouter();
+  const { filters } = useFilters();
 
   const { data: category } = useSuspenseQuery(
     trpc.categories.getOne.queryOptions({ categoryId })
@@ -57,7 +55,7 @@ const CategorySectionSuspense = ({
     trpc.categories.getCategoryItems.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
+        search: filters.search,
         categoryId,
       },
       {

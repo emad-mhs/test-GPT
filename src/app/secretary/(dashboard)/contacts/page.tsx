@@ -6,17 +6,9 @@ import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
-  searchParams: Promise<{
-    search: string | undefined;
-  }>;
-}
-
-const Page = async ({ searchParams }: PageProps) => {
+const Page = async () => {
   await protectedPage();
   const queryClient = getQueryClient();
-
-  const { search } = await searchParams;
 
   void queryClient.prefetchQuery(trpc.users.getSession.queryOptions());
   void queryClient.prefetchInfiniteQuery(
@@ -26,7 +18,7 @@ const Page = async ({ searchParams }: PageProps) => {
   );
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <ContactsView search={search} />
+      <ContactsView />
     </HydrationBoundary>
   );
 };

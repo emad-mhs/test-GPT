@@ -1,29 +1,44 @@
 'use client';
 
+import dynamic from 'next/dynamic';
+
 import { Separator } from '@/components/ui/separator';
 import { BreadCrumb } from '@/components/breadcrumb';
 import { paths } from '@/lib/paths';
-import { AuditLogsSection } from '../sections/audit-section';
-import { FiltersSection } from '../sections/filter-section';
-import { TableNames } from '../../types';
 
-interface AuditLogsViewProps {
-  tableName: TableNames | undefined;
-  userId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
+// Skeletons
+const AuditLogsSectionSkeleton = dynamic(
+  () =>
+    import('../sections/audit-section/skeleton').then(
+      m => m.AuditLogsSectionSkeleton
+    ),
+  { ssr: false }
+);
+
+const FiltersSectionSkeleton = dynamic(
+  () =>
+    import('../sections/filter-section/skeleton').then(
+      m => m.FiltersSectionSkeleton
+    ),
+  { ssr: false }
+);
+
+// Lazy-loaded AuditSection
+const AuditLogsSection = dynamic(
+  () => import('../sections/audit-section').then(m => m.AuditLogsSection),
+  { ssr: false, loading: () => <AuditLogsSectionSkeleton /> }
+);
+
+const FiltersSection = dynamic(
+  () => import('../sections/filter-section').then(m => m.FiltersSection),
+  { ssr: false, loading: () => <FiltersSectionSkeleton /> }
+);
 
 const breadcrumbItems = [
   { title: 'سجل التعديلات', link: paths.auditLogsPage() },
 ];
 
-export const AuditLogsView = ({
-  tableName,
-  userId,
-  from,
-  to,
-}: AuditLogsViewProps) => {
+export const AuditLogsView = () => {
   return (
     <div className='flex-1 space-y-4 p-4 pt-6'>
       <div className='flex flex-row items-center justify-between'>
@@ -32,12 +47,7 @@ export const AuditLogsView = ({
       <Separator />
       <FiltersSection />
       <div className='max-w-(--breakpoint-2xl) mx-auto w-full pb-10 '>
-        <AuditLogsSection
-          tableName={tableName}
-          userId={userId}
-          from={from}
-          to={to}
-        />
+        <AuditLogsSection />
       </div>
     </div>
   );

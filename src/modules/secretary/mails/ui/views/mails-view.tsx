@@ -1,49 +1,43 @@
 'use client';
 
-// import { useRouter } from 'next/navigation';
-// import { ArrowRightIcon, Plus } from 'lucide-react';
+import dynamic from 'next/dynamic';
 
 import { paths } from '@/lib/paths';
 
-// import { Heading } from '@/components/heading';
-// import { Button } from '@/components/ui/button';
 import { BreadCrumb } from '@/components/breadcrumb';
 import { Separator } from '@/components/ui/separator';
 
-import { MailStatuses, MailTypes } from '../../types';
-import { MailsSection } from '../sections/mails-section';
-import { FiltersSection } from '../sections/filters-section';
-// import { useCreateMailModal } from '../../hooks/use-create-mail-modal';
-// import { trpc } from '@/trpc/client';
+// Skeletons
+const MailsSectionSkeleton = dynamic(
+  () =>
+    import('../sections/mails-section/skeleton').then(
+      m => m.MailsSectionSkeleton
+    ),
+  { ssr: false }
+);
 
-interface MailsViewProps {
-  search: string | undefined;
-  type: MailTypes | undefined;
-  status: MailStatuses | undefined;
-  senderId: string | undefined;
-  receiverId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
+const FiltersSectionSkeleton = dynamic(
+  () =>
+    import('../sections/filters-section/skeleton').then(
+      m => m.FiltersSectionSkeleton
+    ),
+  { ssr: false }
+);
+
+// Lazy-loaded AuditSection
+const MailsSection = dynamic(
+  () => import('../sections/mails-section').then(m => m.MailsSection),
+  { ssr: false, loading: () => <MailsSectionSkeleton /> }
+);
+
+const FiltersSection = dynamic(
+  () => import('../sections/filters-section').then(m => m.FiltersSection),
+  { ssr: false, loading: () => <FiltersSectionSkeleton /> }
+);
 
 const breadcrumbItems = [{ title: 'البريد', link: paths.mailsPage() }];
 
-export const MailsView = ({
-  search,
-  type,
-  status,
-  senderId,
-  receiverId,
-  from,
-  to,
-}: MailsViewProps) => {
-  // const router = useRouter();
-  // const newMail = useCreateMailModal();
-
-  // const [{ session }] = trpc.users.getSession.useSuspenseQuery();
-
-  // const canAdd = session?.user.canAdd;
-
+export const MailsView = () => {
   return (
     <div className='flex-1 space-y-4 p-4 pt-6'>
       <div className='flex flex-row items-center justify-between'>
@@ -51,15 +45,7 @@ export const MailsView = ({
       </div>
       <Separator />
       <FiltersSection />
-      <MailsSection
-        search={search}
-        type={type}
-        status={status}
-        senderId={senderId}
-        receiverId={receiverId}
-        from={from}
-        to={to}
-      />
+      <MailsSection />
     </div>
   );
 };

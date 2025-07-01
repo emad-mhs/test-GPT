@@ -1,8 +1,5 @@
 'use client';
 
-import qs from 'query-string';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-
 import {
   Select,
   SelectContent,
@@ -10,68 +7,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-// import { useGetSummary } from '@/features/summary/api/use-get-summary';
 import { Mails } from 'lucide-react';
 import { MAIL_TYPES } from '../modules/secretary/mails/types';
+import { useFilters } from '@/hooks/use-filter-param';
 
 export const TypeFilter = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const params = useSearchParams();
-  const type = params.get('type') || 'all';
-  const search = params.get('search');
-  const status = params.get('status');
-  const senderId = params.get('senderId');
-  const receiverId = params.get('receiverId');
-  const from = params.get('from');
-  const to = params.get('to');
-
-  // const { isLoading: isLoadingSummary } = useGetSummary();
-
-  const onChange = (newValue: string) => {
-    const query = {
-      type: newValue,
-      search,
-      status,
-      senderId,
-      receiverId,
-      from,
-      to,
-    };
-
-    if (newValue === 'all') {
-      query.type = '';
-    }
-
-    const url = qs.stringifyUrl(
-      {
-        url: pathname,
-        query,
-      },
-      { skipNull: true, skipEmptyString: true }
-    );
-
-    router.push(url);
-  };
+  const { filters, setType } = useFilters();
 
   return (
-    <Select
-      dir='rtl'
-      value={type}
-      onValueChange={onChange}
-      // disabled={isLoadingSummary}
-    >
-      <SelectTrigger className='lg:w-auto w-full justify-between h-9 rounded-md px-3 font-normal bg-white/10 hover:bg-white/20 focus:ring-offset-0 focus:ring-transparent outline-hidden text-muted-foreground focus:bg-white/30 transition'>
+    <Select dir='rtl' value={filters.type ?? 'all'} onValueChange={setType}>
+      <SelectTrigger className='lg:w-auto w-full justify-between h-9 rounded-md px-3 font-normal bg-white/10 hover:bg-white/20 outline-hidden text-muted-foreground transition'>
         <Mails className='size-4 ml-2 text-muted-foreground' />
         <SelectValue className='ml-2' placeholder='اختر نوع البريد' />
       </SelectTrigger>
       <SelectContent>
         <SelectItem value='all'>كل البريد</SelectItem>
-        {MAIL_TYPES.map(type => (
-          <SelectItem key={type.value} value={type.value}>
-            {type.label}
+        {MAIL_TYPES.map(t => (
+          <SelectItem key={t.value} value={t.value}>
+            {t.label}
           </SelectItem>
         ))}
       </SelectContent>

@@ -11,17 +11,13 @@ interface PageProps {
   params: Promise<{
     categoryId: string;
   }>;
-  searchParams: Promise<{
-    search: string | undefined;
-  }>;
 }
 
-const Page = async ({ params, searchParams }: PageProps) => {
+const Page = async ({ params }: PageProps) => {
   await protectedPage();
   const queryClient = getQueryClient();
 
   const { categoryId } = await params;
-  const { search } = await searchParams;
 
   void queryClient.prefetchQuery(trpc.users.getSession.queryOptions());
   void queryClient.prefetchQuery(
@@ -37,7 +33,7 @@ const Page = async ({ params, searchParams }: PageProps) => {
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <RoleGate allowedRole={[UserRoles.ADMIN, UserRoles.MANAGER]}>
-        <CategoryView categoryId={categoryId} search={search} />
+        <CategoryView categoryId={categoryId} />
       </RoleGate>
     </HydrationBoundary>
   );

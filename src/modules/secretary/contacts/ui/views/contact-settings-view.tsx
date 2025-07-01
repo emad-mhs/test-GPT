@@ -1,4 +1,21 @@
-import { FormSection } from '../sections/form-section';
+'use client';
+
+import dynamic from 'next/dynamic';
+
+// Skeletons
+const FormSectionSkeleton = dynamic(
+  () =>
+    import('../sections/form-section/skeleton').then(
+      m => m.FormSectionSkeleton
+    ),
+  { ssr: false }
+);
+
+// Lazy-loaded AuditSection
+const FormSection = dynamic(
+  () => import('../sections/form-section').then(m => m.FormSection),
+  { ssr: false, loading: () => <FormSectionSkeleton /> }
+);
 
 interface PageProps {
   contactId: string;

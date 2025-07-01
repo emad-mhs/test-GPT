@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import qs from 'query-string';
+import * as React from 'react';
 import { Check, ChevronDown, PlusCircle, UsersRound } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 
 import { cn } from '@/lib/utils';
 import {
@@ -23,48 +25,74 @@ import { useCreateContactModal } from '@/modules/secretary/contacts/hooks/use-cr
 import { departmentsMain } from '@/modules/secretary/departments/types';
 import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useFilters } from '@/hooks/use-filter-param';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
   typeof PopoverTrigger
 >;
 
-interface SenderSwitcherProps extends PopoverTriggerProps {
+interface StoreSwitcherProps extends PopoverTriggerProps {
+  // items: Record<string, any>[];
   options?: { label: string; value: string }[];
   placeholder?: string;
   disabled?: boolean;
   value?: string;
 }
 
-export const SenderSwitcher = ({
+export const ReceiverSwitcher = ({
   className,
   options = [],
   placeholder,
   disabled,
-}: SenderSwitcherProps) => {
+}: StoreSwitcherProps) => {
   const trpc = useTRPC();
   const newContact = useCreateContactModal();
+  const router = useRouter();
+  const pathname = usePathname();
 
-  // hook عام للفلاتر يدير قيمة senderId في الـ URL
-  const { filters, setSenderId } = useFilters();
-  const { senderId } = filters;
+  const params = useSearchParams();
+  const receiverId = params.get('receiverId') || 'all';
+  const senderId = params.get('senderId');
+  const search = params.get('search');
+  const type = params.get('type');
+  const status = params.get('status');
+  const from = params.get('from');
+  const to = params.get('to');
 
   const { data: session } = useSuspenseQuery(
     trpc.users.getSession.queryOptions()
   );
+
   const isSecretary = session.user.departmentId === departmentsMain.SECRETARY;
 
-  // لإظهار الاسم الحالي أو placeholder
-  const currentContact = options.find(item => item.value === senderId);
+  const currentContact = options.find(item => item.value === receiverId);
 
-  // لإدارة فتح/إغلاق الـ popover
   const [open, setOpen] = React.useState(false);
 
-  // عند اختيار عنصر جديد
-  const onChange = (value: string) => {
-    // نستخدم '' لتمثيل "all" (سيتم مسح الباراميتر من الـ URL)
-    setSenderId(value === 'all' ? '' : value);
+  const onChange = (newValue: string) => {
     setOpen(false);
+    const query = {
+      receiverId: newValue,
+      senderId,
+      search,
+      type,
+      status,
+      from,
+      to,
+    };
+
+    if (newValue === 'all') {
+      query.receiverId = '';
+    }
+
+    const url = qs.stringifyUrl(
+      {
+        url: pathname,
+        query,
+      },
+      { skipNull: true, skipEmptyString: true }
+    );
+
+    router.push(url);
   };
 
   return (
@@ -86,6 +114,7 @@ export const SenderSwitcher = ({
           <ChevronDown className='mr-2 size-4 shrink-0 opacity-50' />
         </Button>
       </PopoverTrigger>
+      {/* <PopoverContent className='w-[200px] p-0'> */}
       <PopoverContent className='lg:w-auto w-full p-0'>
         <Command>
           <CommandList>
@@ -98,6 +127,7 @@ export const SenderSwitcher = ({
                   onSelect={() => onChange(contact.value)}
                   className='text-sm'
                 >
+                  {/* <Store className='ml-2 h-4 w-4' /> */}
                   {contact.label}
                   <Check
                     className={cn(

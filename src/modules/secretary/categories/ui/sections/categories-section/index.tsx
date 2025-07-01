@@ -28,23 +28,21 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface CategoriesSectionProps {
-  search: string | undefined;
-}
-
-export const CategoriesSection = (props: CategoriesSectionProps) => {
+export const CategoriesSection = () => {
   return (
     <Suspense fallback={<CategoriesSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <CategoriesSectionSuspense {...props} />
+        <CategoriesSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-const CategoriesSectionSuspense = ({ search }: CategoriesSectionProps) => {
+const CategoriesSectionSuspense = () => {
   const trpc = useTRPC();
+  const { filters } = useFilters();
 
   const newCategory = useCreateCategoryModal();
   const { data: session } = useSuspenseQuery(
@@ -55,7 +53,7 @@ const CategoriesSectionSuspense = ({ search }: CategoriesSectionProps) => {
     trpc.categories.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
+        search: filters.search,
       },
       {
         getNextPageParam: (lastPage: Paginated<Category>) =>

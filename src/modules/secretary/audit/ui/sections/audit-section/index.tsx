@@ -17,61 +17,37 @@ import { format } from 'date-fns';
 import { InfiniteScroll } from '@/components/infinite-scroll';
 import { Heading } from '@/components/heading';
 import { AuditChangesModal } from '../../components/audit-changes-modal';
-import { AuditLog, TableNames } from '../../../types';
+import { AuditLog } from '../../../types';
 import { Button } from '@/components/ui/button';
 import { AuditLogsSectionSkeleton } from './skeleton';
 import { useTRPC } from '@/trpc/client';
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface AuditLogsSectionProps {
-  // search: string | undefined;
-  tableName: TableNames | undefined;
-  userId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
-
-export const AuditLogsSection = (props: AuditLogsSectionProps) => {
+export const AuditLogsSection = () => {
   return (
     <Suspense fallback={<AuditLogsSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <AuditSectionSuspense {...props} />
+        <AuditSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-export const AuditSectionSuspense = ({
-  tableName,
-  userId,
-  from,
-  to,
-}: AuditLogsSectionProps) => {
+export const AuditSectionSuspense = () => {
   const trpc = useTRPC();
+  const { filters } = useFilters();
 
   const [selectedLog, setSelectedLog] = useState<AuditLog | null>(null);
-
-  // const [logs, query] = trpc.audit.getLogs.useSuspenseInfiniteQuery(
-  //   {
-  //     limit: DEFAULT_LIMIT,
-  //     tableName,
-  //     userId,
-  //     from,
-  //     to,
-  //   },
-  //   {
-  //     getNextPageParam: lastPage => lastPage.nextCursor,
-  //   }
-  // );
 
   const query = useSuspenseInfiniteQuery(
     trpc.audit.getLogs.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        tableName,
-        userId,
-        from,
-        to,
+        tableName: filters.tableName,
+        userId: filters.userId,
+        from: filters.from,
+        to: filters.to,
       },
       {
         getNextPageParam: lastPage => lastPage.nextCursor,

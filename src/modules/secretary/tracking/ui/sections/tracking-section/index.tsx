@@ -17,53 +17,30 @@ import { InfiniteScroll } from '@/components/infinite-scroll';
 import { MailTypes } from '@/modules/secretary/mails/types';
 import { TrackingRow } from '../../components/tracking-row';
 import { useSuspenseInfiniteQuery } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface TrackingSectionProps {
-  search: string | undefined;
-  type: MailTypes | undefined;
-  senderId: string | undefined;
-  receiverId: string | undefined;
-}
-
-export const TrackingSection = (props: TrackingSectionProps) => {
+export const TrackingSection = () => {
   return (
     <Suspense fallback={<p>loading</p>}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <TrackingSectionSuspense {...props} />
+        <TrackingSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-export const TrackingSectionSuspense = ({
-  search,
-  type,
-  senderId,
-  receiverId,
-}: TrackingSectionProps) => {
+export const TrackingSectionSuspense = () => {
   const trpc = useTRPC();
+  const { filters } = useFilters();
 
-  // const [mails, query] = trpc.tracking.dueSoon.useSuspenseInfiniteQuery(
-  //   {
-  //     limit: DEFAULT_LIMIT,
-  //     search,
-  //     type,
-  //     senderId,
-  //     receiverId,
-  //   },
-  //   {
-  //     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  //     getNextPageParam: (lastPage: any) => lastPage.nextCursor,
-  //   }
-  // );
   const query = useSuspenseInfiniteQuery(
     trpc.tracking.dueSoon.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
-        type,
-        senderId,
-        receiverId,
+        search: filters.search,
+        type: filters.type,
+        senderId: filters.senderId,
+        receiverId: filters.receiverId,
       },
       {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any

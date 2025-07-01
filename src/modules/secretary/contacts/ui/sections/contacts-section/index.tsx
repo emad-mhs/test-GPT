@@ -26,23 +26,22 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface ContactsSectionProps {
-  search: string | undefined;
-}
-
-export const ContactsSection = (props: ContactsSectionProps) => {
+export const ContactsSection = () => {
   return (
     <Suspense fallback={<ContactsSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <ContactsSectionSuspense {...props} />
+        <ContactsSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-const ContactsSectionSuspense = ({ search }: ContactsSectionProps) => {
+const ContactsSectionSuspense = () => {
   const trpc = useTRPC();
+  const { filters } = useFilters();
+
   const newContact = useCreateContactModal();
 
   const { data: session } = useSuspenseQuery(
@@ -53,7 +52,7 @@ const ContactsSectionSuspense = ({ search }: ContactsSectionProps) => {
     trpc.contacts.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
+        search: filters.search,
       },
       {
         getNextPageParam: lastPage => lastPage.nextCursor,

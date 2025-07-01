@@ -6,40 +6,27 @@ import { SpendingPie } from '../../components/spending-pie';
 import { ErrorBoundary } from 'react-error-boundary';
 
 import { useTRPC } from '@/trpc/client';
-import { MailStatuses, MailTypes } from '@/modules/secretary/mails/types';
 import { DataChartsSectionSkeleton } from './skeleton';
 import { ErrorFallback } from '@/components/error-fallback';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface DataChartsSectionProps {
-  // search: string | undefined;
-  type: MailTypes | undefined;
-  status: MailStatuses | undefined;
-  senderId: string | undefined;
-  receiverId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
-
-export const DataChartsSection = (props: DataChartsSectionProps) => {
+export const DataChartsSection = () => {
   return (
     <Suspense fallback={<DataChartsSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <DataChartsSectionSuspense {...props} />
+        <DataChartsSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-export const DataChartsSectionSuspense = ({
-  type,
-  status,
-  senderId,
-  receiverId,
-  from,
-  to,
-}: DataChartsSectionProps) => {
+export const DataChartsSectionSuspense = () => {
   const trpc = useTRPC();
+  const {
+    filters: { type, status, senderId, receiverId, from, to },
+  } = useFilters();
+
   const {
     data: { data },
   } = useSuspenseQuery(

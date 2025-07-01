@@ -20,12 +20,6 @@ export const FiltersSection = () => {
 };
 
 export const FiltersSectionSuspense = () => {
-  // const [{ data: contacts }] = trpc.contacts.getAll.useSuspenseQuery();
-
-  // const contactOptions = contacts.map(contact => ({
-  //   value: contact.id,
-  //   label: contact.jobTitle,
-  // }));
   const contactOpts = useContactsOptions();
 
   const senderOptions = [

@@ -113,7 +113,7 @@ export const mailsRouter = createTRPCRouter({
 
       const hasMore = data.length > limit;
       const items = hasMore ? data.slice(0, -1) : data;
-      const lastItem = items[items.length - 1];
+      const lastItem = items[items.length - 1]!;
       const nextCursor = hasMore
         ? { id: lastItem.id, createdAt: lastItem.createdAt }
         : null;

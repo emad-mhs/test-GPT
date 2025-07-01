@@ -27,24 +27,21 @@ import {
   useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface UsersSectionProps {
-  search: string | undefined;
-}
-
-export const UsersSection = (props: UsersSectionProps) => {
+export const UsersSection = () => {
   return (
     <Suspense fallback={<UsersSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <UsersSectionSuspense {...props} />
+        <UsersSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-const UsersSectionSuspense = ({ search }: UsersSectionProps) => {
+const UsersSectionSuspense = () => {
   const trpc = useTRPC();
-
+  const { filters } = useFilters();
   const newUser = useCreateUserModal();
 
   const { data: session } = useSuspenseQuery(
@@ -56,7 +53,7 @@ const UsersSectionSuspense = ({ search }: UsersSectionProps) => {
     trpc.users.getMany.infiniteQueryOptions(
       {
         limit: DEFAULT_LIMIT,
-        search,
+        search: filters.search,
       },
       {
         getNextPageParam: lastPage => lastPage.nextCursor,

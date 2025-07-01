@@ -38,14 +38,7 @@ const Page = async ({ searchParams }: PageProps) => {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <SummaryView
-        type={type}
-        status={status}
-        senderId={senderId}
-        receiverId={receiverId}
-        from={from}
-        to={to}
-      />
+      <SummaryView />
     </HydrationBoundary>
   );
 };

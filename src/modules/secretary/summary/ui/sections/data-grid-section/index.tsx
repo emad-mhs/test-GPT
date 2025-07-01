@@ -8,42 +8,29 @@ import { formatDateRange } from '@/lib/utils';
 
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
-import { MailStatuses, MailTypes } from '@/modules/secretary/mails/types';
 import { DataGridSectionSkeleton } from './skeleton';
 import { DataCard } from '../../components/data-card';
 import { ErrorFallback } from '@/components/error-fallback';
 import { useTRPC } from '@/trpc/client';
 import { useSuspenseQuery } from '@tanstack/react-query';
+import { useFilters } from '@/hooks/use-filter-param';
 
-interface DataGridSectionProps {
-  // search: string | undefined;
-  type: MailTypes | undefined;
-  status: MailStatuses | undefined;
-  senderId: string | undefined;
-  receiverId: string | undefined;
-  from: string | undefined;
-  to: string | undefined;
-}
-
-export const DataGridSection = (props: DataGridSectionProps) => {
+export const DataGridSection = () => {
   return (
     <Suspense fallback={<DataGridSectionSkeleton />}>
       <ErrorBoundary FallbackComponent={ErrorFallback}>
-        <DataGridSectionSuspense {...props} />
+        <DataGridSectionSuspense />
       </ErrorBoundary>
     </Suspense>
   );
 };
 
-export const DataGridSectionSuspense = ({
-  type,
-  status,
-  senderId,
-  receiverId,
-  from,
-  to,
-}: DataGridSectionProps) => {
+export const DataGridSectionSuspense = () => {
   const trpc = useTRPC();
+  const {
+    filters: { type, status, senderId, receiverId, from, to },
+  } = useFilters();
+
   const {
     data: { data },
   } = useSuspenseQuery(

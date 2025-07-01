@@ -1,8 +1,6 @@
 'use client';
 
-import qs from 'query-string';
-import { useState, useMemo } from 'react';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
 import { CalendarIcon, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -14,58 +12,74 @@ import {
   PopoverClose,
 } from '@/components/ui/popover';
 import { formatDateRange } from '@/lib/utils';
+import { useFilters } from '@/hooks/use-filter-param';
 
 export const DateFilter = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
+  // نستخدم الهُوك العامّ للاحتفاظ بالفلاتر و setters الخاصة بها
+  const {
+    filters: { from, to },
+    setFrom,
+    setTo,
+  } = useFilters();
 
   // Parse only if both from & to exist
-  const initial = useMemo<DateRange | undefined>(() => {
-    const f = searchParams.get('from');
-    const t = searchParams.get('to');
-    if (f && t) {
-      const from = new Date(f);
-      const to = new Date(t);
-      if (!isNaN(from.valueOf()) && !isNaN(to.valueOf())) {
-        return { from, to };
+  // const initial = useMemo<DateRange | undefined>(() => {
+  //   const f = searchParams.get('from');
+  //   const t = searchParams.get('to');
+  //   if (f && t) {
+  //     const from = new Date(f);
+  //     const to = new Date(t);
+  //     if (!isNaN(from.valueOf()) && !isNaN(to.valueOf())) {
+  //       return { from, to };
+  //     }
+  //   }
+  //   return undefined;
+  // }, [searchParams]);
+  // نبني الحالة المحلية لمحرِّك الـ date_picker من قيمة الـ URL الحالية
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    if (from && to) {
+      const f = new Date(from);
+      const t = new Date(to);
+      if (!isNaN(f.valueOf()) && !isNaN(t.valueOf())) {
+        return { from: f, to: t };
       }
     }
     return undefined;
-  }, [searchParams]);
+  });
 
-  const [date, setDate] = useState<DateRange | undefined>(initial);
+  // إذا تغيَّرت قيمة الـ URL من خارج هذا المكوّن، نزامن الحالة المحلية
+  useEffect(() => {
+    if (from && to) {
+      const f = new Date(from);
+      const t = new Date(to);
+      if (!isNaN(f.valueOf()) && !isNaN(t.valueOf())) {
+        setDateRange({ from: f, to: t });
+        return;
+      }
+    }
+    setDateRange(undefined);
+  }, [from, to]);
 
-  const pushToUrl = (range: DateRange | undefined) => {
-    const query: Record<string, string | undefined> = {
-      // only include from/to if range is defined
-      from: range?.from?.toISOString().slice(0, 10),
-      to: range?.to?.toISOString().slice(0, 10),
-      // preserve other filters
-      search: searchParams.get('search') || undefined,
-      status: searchParams.get('status') || undefined,
-      type: searchParams.get('type') || undefined,
-      senderId: searchParams.get('senderId') || undefined,
-      receiverId: searchParams.get('receiverId') || undefined,
-      tableName: searchParams.get('tableName') || undefined,
-      userId: searchParams.get('userId') || undefined,
-    };
+  const isApplyDisabled = !(dateRange?.from && dateRange?.to);
 
-    const url = qs.stringifyUrl(
-      { url: pathname, query },
-      { skipEmptyString: true, skipNull: true }
-    );
-    router.push(url);
+  // عند الضغط على "تطبيق": حدّث الـ URL
+  const handleApply = () => {
+    if (dateRange?.from && dateRange.to) {
+      const f = dateRange.from.toISOString().slice(0, 10);
+      const t = dateRange.to.toISOString().slice(0, 10);
+      setFrom(f);
+      setTo(t);
+    }
   };
 
-  const onReset = () => {
-    setDate(undefined);
-    pushToUrl(undefined);
+  // عند الضغط على "إلغاء": مسح الفلترين من الـ URL
+  const handleReset = () => {
+    setDateRange(undefined);
+    setFrom(''); // clearOnDefault سيزيل الباراميتر
+    setTo('');
   };
 
-  const label = date ? formatDateRange(date) : 'التاريخ'; // or any placeholder you like
-
-  const isApplyDisabled = !(date?.from && date?.to);
+  const label = dateRange ? formatDateRange(dateRange) : 'التاريخ';
 
   return (
     <Popover>
@@ -84,8 +98,8 @@ export const DateFilter = () => {
       <PopoverContent className='w-full lg:w-auto p-0' align='start'>
         <Calendar
           mode='range'
-          selected={date}
-          onSelect={setDate}
+          selected={dateRange}
+          onSelect={setDateRange}
           numberOfMonths={2}
         />
 
@@ -93,7 +107,7 @@ export const DateFilter = () => {
           <Button
             variant='secondary'
             className='flex-1'
-            onClick={onReset}
+            onClick={handleReset}
             disabled={isApplyDisabled}
           >
             إلغاء
@@ -101,7 +115,7 @@ export const DateFilter = () => {
           <PopoverClose asChild>
             <Button
               className='flex-1'
-              onClick={() => pushToUrl(date)}
+              onClick={handleApply}
               disabled={isApplyDisabled}
             >
               تطبيق
