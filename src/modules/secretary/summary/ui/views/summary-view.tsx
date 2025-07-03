@@ -25,25 +25,23 @@ const FiltersSectionSkeleton = dynamic(
 );
 const DataGridSectionSkeleton = dynamic(
   () =>
-    import(
-      '@/modules/secretary/summary/ui/sections/data-grid-section/skeleton'
-    ).then(m => m.DataGridSectionSkeleton),
+    import('../sections/data-grid-section/skeleton').then(
+      m => m.DataGridSectionSkeleton
+    ),
   { ssr: false }
 );
 const DataChartsSectionSkeleton = dynamic(
   () =>
-    import(
-      '@/modules/secretary/summary/ui/sections/data-charts-section/skeleton'
-    ).then(m => m.DataChartsSectionSkeleton),
+    import('../sections/data-charts-section/skeleton').then(
+      m => m.DataChartsSectionSkeleton
+    ),
   { ssr: false }
 );
 
 // lazy-load مع عرض الـ Skeleton أثناء التحميل
 const WelcomeMsgSection = dynamic(
   () =>
-    import('@/modules/secretary/summary/ui/sections/welcome-msg-section').then(
-      m => m.WelcomeMsgSection
-    ),
+    import('../sections/welcome-msg-section').then(m => m.WelcomeMsgSection),
   { ssr: false, loading: () => <WelcomeMsgSectionSkeleton /> }
 );
 const FiltersSection = dynamic(
